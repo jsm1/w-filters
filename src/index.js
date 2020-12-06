@@ -9,7 +9,7 @@ const pageBuster = new PageBuster();
 async function init() {
     pageBuster.init({});
 
-    await pageBuster.run();
+    //await pageBuster.run();
     filter.init();
     filter.filter();
 }

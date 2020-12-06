@@ -1,8 +1,14 @@
 const utils = require('./utils');
+const { get: lodashGet } = require('lodash');
+const _ = {
+    'get': lodashGet,
+};
 
 module.exports = class PageFilter {
     constructor({
         filterListAttr = 'data-filter-list',
+        filterListCollectionAttr = 'data-filter-list-collection',
+        listCountAttr = 'data-filter-list-count',
         filterItemAttr = 'data-filter-item',
         filterDataAttr = 'data-global-filter',
         filterInputAttr = 'data-filter-input',
@@ -21,6 +27,7 @@ module.exports = class PageFilter {
     }
 
     init() {
+        this.getTemplate();
         this.applyLocalStorage();
         utils.addEventListenerToSelector(`[${this.filterInputAttr}]`, 'change', this.filter.bind(this));
         utils.addEventListenerToSelector(`${this.clearFilterSelector}`, 'click', this.clearFilters.bind(this));
@@ -28,6 +35,7 @@ module.exports = class PageFilter {
 
     async filter() {
         const filterState = this.getState();
+        this.queryFilterState(filterState);
         this.setLocalStorage(filterState);
         const elementsWithData = this.getElementsWithData();
         elementsWithData.forEach(({ el, data }) => {
@@ -137,4 +145,77 @@ module.exports = class PageFilter {
         });
         this.filter();
     }
+
+    queryFilterState(filter) {
+        
+        [...document.querySelectorAll(`[${this.filterListAttr}]`)].forEach((listEl) => {
+            const params = {
+                collections: listEl.getAttribute(this.filterListCollectionAttr) || 'articles',
+                query: filter,
+                count: listEl.getAttribute(this.listCountAttr) || 25,
+                offset: this.getPageOffset() || 0,
+            };
+            $.post('https://vnxocvrzmc.execute-api.eu-west-1.amazonaws.com/getItemsDB', JSON.stringify(params))
+                .done((resp) => {
+                    const items = JSON.parse(resp);
+                    const itemNodes = items.map((item) => {
+                        const el = this.buildNodeFromItem(this.template, item);
+                        el.style.display = null;
+                        return el;
+                    });
+                    listEl.innerHTML = '';
+                    itemNodes.forEach((n) => listEl.appendChild(n));   
+                });
+        });
+    }
+
+    getTemplate() {
+        this.template = document.querySelector(`[${this.filterItemAttr}]`).outerHTML;
+    }
+
+    buildNodeFromItem(template, item) {
+        const parentNode = document.createElement('div');
+        parentNode.innerHTML = template;
+        let templateFields = parentNode.querySelectorAll(`[data-tp-text]`);
+        [...templateFields].forEach((el) => {
+            const field = el.getAttribute('data-tp-text');
+            if (field) {
+               const value =  _.get(item, field);
+               el.innerText = value;
+            }
+        });
+
+        templateFields = parentNode.querySelectorAll(`[data-tp-src]`);
+        [...templateFields].forEach((el) => {
+            const field = el.getAttribute('data-tp-src');
+            if (field) {
+               const value =  _.get(item, field);
+               el.src = value;
+            }
+        });
+
+        templateFields = parentNode.querySelectorAll(`[data-tp-html]`);
+        [...templateFields].forEach((el) => {
+            const field = el.getAttribute('data-tp-html');
+            if (field) {
+               const value =  _.get(item, field);
+               el.innerHTML = value;
+            }
+        });
+
+        templateFields = parentNode.querySelectorAll(`[data-tp-href]`);
+        [...templateFields].forEach((el) => {
+            const field = el.getAttribute('data-tp-href');
+            if (field) {
+               const value =  _.get(item, field);
+               el.href = value;
+            }
+        });
+        return parentNode.children[0];
+    }
+
+    getPageOffset() {
+        return 0;
+    }
+
 }
