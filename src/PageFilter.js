@@ -191,6 +191,7 @@ module.exports = class PageFilter {
             if (field) {
                const value =  _.get(item, field);
                el.src = value;
+               el.removeAttribute('srcset');
             }
         });
 
