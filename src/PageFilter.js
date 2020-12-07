@@ -223,20 +223,27 @@ module.exports = class PageFilter {
     }
 
     getPageOffset() {
-        return 0;
+        const searchString = window.location.search;
+        const pageSplit = searchString.split(/page=/);
+        const containsPageNumber = pageSplit[1];
+        if (!containsPageNumber) {
+            return 0;
+        }
+        return parseInt(pageSplit[1]);
     }
 
     initPagination() {
-        utils.addEventListenerToSelector(this.nextPageSelector, 'click', this.onPageClick.bind(this));
-        utils.addEventListenerToSelector(this.previousPageSelector, 'click', this.onPageClick.bind(this));
+        // utils.addEventListenerToSelector(this.nextPageSelector, 'click', this.onPageClick.bind(this));
+        // utils.addEventListenerToSelector(this.previousPageSelector, 'click', this.onPageClick.bind(this));
     }
 
     onPageClick(event) {
-        event.stopPropagation();
         event.preventDefault();
         const href = event.target.href;
-        console.log(href);
-        window.history.pushState('Page x', document.title, href);
+        console.log(event.target);
+        const pageOffset = this.getPageOffset() || 1;
+
+        window.history.pushState(`${pageOffset}`, document.title, href);
         return false;
     }
 
