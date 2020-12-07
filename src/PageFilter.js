@@ -15,8 +15,12 @@ module.exports = class PageFilter {
         filterNameAttr = 'data-filter-name',
         filterValueAttr = 'data-filter-value',
         clearFilterSelector = '[data-clear-filters]',
+        nextPageSelector = '.w-pagination-next',
+        previousPageSelector = '.w-pagination-previous',
     }) {
         this.filterListAttr = filterListAttr;
+        this.filterListCollectionAttr = filterListCollectionAttr;
+        this.listCountAttr = listCountAttr;
         this.filterItemAttr = filterItemAttr;
         this.filterDataAttr = filterDataAttr;
         this.filterInputAttr = filterInputAttr;
@@ -24,9 +28,12 @@ module.exports = class PageFilter {
         this.filterValueAttr = filterValueAttr;
         this.clearFilterSelector = clearFilterSelector;
         this.localStorageKey = 'kidadl-filters';
+        this.nextPageSelector = nextPageSelector;
+        this.previousPageSelector = previousPageSelector;
     }
 
     init() {
+        this.initPagination();
         this.getTemplate();
         this.applyLocalStorage();
         utils.addEventListenerToSelector(`[${this.filterInputAttr}]`, 'change', this.filter.bind(this));
@@ -217,6 +224,20 @@ module.exports = class PageFilter {
 
     getPageOffset() {
         return 0;
+    }
+
+    initPagination() {
+        utils.addEventListenerToSelector(this.nextPageSelector, 'click', this.onPageClick.bind(this));
+        utils.addEventListenerToSelector(this.previousPageSelector, 'click', this.onPageClick.bind(this));
+    }
+
+    onPageClick(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        const href = event.target.href;
+        console.log(href);
+        window.history.pushState('Page x', document.title, href);
+        return false;
     }
 
 }
