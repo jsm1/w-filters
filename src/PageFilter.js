@@ -156,8 +156,9 @@ module.exports = class PageFilter {
     queryFilterState(filter) {
         
         [...document.querySelectorAll(`[${this.filterListAttr}]`)].forEach((listEl) => {
+            const collectionSlug = listEl.getAttribute(this.filterListCollectionAttr) || 'articles';
             const params = {
-                collections: listEl.getAttribute(this.filterListCollectionAttr) || 'articles',
+                collections: collectionSlug,
                 query: filter,
                 count: listEl.getAttribute(this.listCountAttr) || 25,
                 offset: this.getPageOffset() || 0,
@@ -166,7 +167,7 @@ module.exports = class PageFilter {
                 .done((resp) => {
                     const items = JSON.parse(resp);
                     const itemNodes = items.map((item) => {
-                        const el = this.buildNodeFromItem(this.template, item);
+                        const el = this.buildNodeFromItem(this.template, item, collectionSlug);
                         el.style.display = null;
                         return el;
                     });
@@ -180,7 +181,7 @@ module.exports = class PageFilter {
         this.template = document.querySelector(`[${this.filterItemAttr}]`).outerHTML;
     }
 
-    buildNodeFromItem(template, item) {
+    buildNodeFromItem(template, item, collectionSlug) {
         const parentNode = document.createElement('div');
         parentNode.innerHTML = template;
         let templateFields = parentNode.querySelectorAll(`[data-tp-text]`);
@@ -214,6 +215,10 @@ module.exports = class PageFilter {
         templateFields = parentNode.querySelectorAll(`[data-tp-href]`);
         [...templateFields].forEach((el) => {
             const field = el.getAttribute('data-tp-href');
+            if (field === 'slug') {
+                el.href = `/${collectionSlug}/${item.slug}`
+                return;
+            }
             if (field) {
                const value =  _.get(item, field);
                el.href = value;
