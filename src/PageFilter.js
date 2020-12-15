@@ -163,6 +163,7 @@ module.exports = class PageFilter {
                 count: listEl.getAttribute(this.listCountAttr) || 25,
                 offset: this.getPageOffset() || 0,
             };
+            listEl.classList.add('is-loading');
             $.post('https://vnxocvrzmc.execute-api.eu-west-1.amazonaws.com/getItemsDB', JSON.stringify(params))
                 .done((resp) => {
                     const items = JSON.parse(resp);
@@ -173,6 +174,12 @@ module.exports = class PageFilter {
                     });
                     listEl.innerHTML = '';
                     itemNodes.forEach((n) => listEl.appendChild(n));   
+                })
+                .fail((err) => {
+                    console.error('An error occurred loading items', err);
+                })
+                .always(() => {
+                    listEl.classList.remove('is-loading');
                 });
         });
     }
