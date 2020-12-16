@@ -167,6 +167,10 @@ module.exports = class PageFilter {
             $.post('https://vnxocvrzmc.execute-api.eu-west-1.amazonaws.com/getItemsDB', JSON.stringify(params))
                 .done((resp) => {
                     const items = JSON.parse(resp);
+                    if (!items.length) {
+                        console.log('No results, leaving page as is');
+                        return;
+                    }
                     const itemNodes = items.map((item) => {
                         const el = this.buildNodeFromItem(this.template, item, collectionSlug);
                         el.style.display = null;
@@ -223,13 +227,26 @@ module.exports = class PageFilter {
         [...templateFields].forEach((el) => {
             const field = el.getAttribute('data-tp-href');
             if (field === 'slug') {
-                el.href = `/${collectionSlug}/${item.slug}`
+                el.href = `/${collectionSlug}/${item.Slug}`
                 return;
             }
             if (field) {
                const value =  _.get(item, field);
                el.href = value;
             }
+        });
+
+        templateFields = parentNode.querySelectorAll(`[data-tp-att]`);
+        [...templateFields].forEach((el) => {
+            const field = el.getAttribute('data-tp-att');
+            const attributes = field.split(',')
+            attributes.forEach((attr) => {
+                const [key, value] = attr.trim().split('=');
+                if (key && value) {
+                   const attValue =  _.get(item, value);
+                   el.setAttribute(key, attValue);
+                }
+            })
         });
         return parentNode.children[0];
     }
