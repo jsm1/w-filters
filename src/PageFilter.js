@@ -33,6 +33,8 @@ module.exports = class PageFilter {
     }
 
     init() {
+        this.initialStates = [];
+        this.getInitialStates();
         this.initPagination();
         this.getTemplate();
         this.applyLocalStorage();
@@ -42,8 +44,15 @@ module.exports = class PageFilter {
 
     async filter() {
         const filterState = this.getState();
-        this.queryFilterState(filterState);
-        this.setLocalStorage(filterState);
+        console.log(filterState);
+        const isNoFilterApplied = !Object.keys(filterState).length;
+        if (isNoFilterApplied) {
+            this.applyInitialState();
+        } else {
+            this.queryFilterState(filterState);
+            this.setLocalStorage(filterState);
+        }
+        
         const elementsWithData = this.getElementsWithData();
         elementsWithData.forEach(({ el, data }) => {
             const shouldBeVisible = this.filterItem(data, filterState);
@@ -226,7 +235,7 @@ module.exports = class PageFilter {
         templateFields = parentNode.querySelectorAll(`[data-tp-href]`);
         [...templateFields].forEach((el) => {
             const field = el.getAttribute('data-tp-href');
-            if (field === 'slug') {
+            if (/^slug$/i.test(field)) {
                 el.href = `/${collectionSlug}/${item.Slug}`
                 return;
             }
@@ -274,6 +283,20 @@ module.exports = class PageFilter {
 
         window.history.pushState(`${pageOffset}`, document.title, href);
         return false;
+    }
+
+    applyInitialState() {
+        [...document.querySelectorAll(`[${this.filterListAttr}]`)].forEach((listEl, index) => {
+            const initialStateItems = this.initialStates[index];
+            listEl.innerHTML = '';
+            initialStateItems.forEach((item) => listEl.appendChild(item));
+        });
+    }
+
+    getInitialStates() {
+        [...document.querySelectorAll(`[${this.filterListAttr}]`)].forEach((listEl) => {
+            this.initialStates.push([...listEl.children]);
+        });
     }
 
 }
