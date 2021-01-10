@@ -50,9 +50,8 @@ module.exports = class PageFilter {
             this.applyInitialState();
         } else {
             this.queryFilterState(filterState);
-            this.setLocalStorage(filterState);
         }
-        
+        this.setLocalStorage(filterState);
         const elementsWithData = this.getElementsWithData();
         elementsWithData.forEach(({ el, data }) => {
             const shouldBeVisible = this.filterItem(data, filterState);
