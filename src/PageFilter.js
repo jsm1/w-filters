@@ -17,6 +17,7 @@ module.exports = class PageFilter {
         clearFilterSelector = '[data-clear-filters]',
         nextPageSelector = '.w-pagination-next',
         previousPageSelector = '.w-pagination-previous',
+        filterActiveTrackerSelector = '[data-filter-state]'
     }) {
         this.filterListAttr = filterListAttr;
         this.filterListCollectionAttr = filterListCollectionAttr;
@@ -30,6 +31,8 @@ module.exports = class PageFilter {
         this.localStorageKey = 'kidadl-filters';
         this.nextPageSelector = nextPageSelector;
         this.previousPageSelector = previousPageSelector;
+        this.filterActiveTrackerSelector = filterActiveTrackerSelector;
+        this.clearing = false;
     }
 
     init() {
@@ -43,8 +46,12 @@ module.exports = class PageFilter {
     }
 
     async filter() {
+        if (this.clearing) {
+            return;
+        }
         const filterState = this.getState();
         console.log(filterState);
+        this.setFilterTrackerClasses(filterState);
         const isNoFilterApplied = !Object.keys(filterState).length;
         if (isNoFilterApplied) {
             this.applyInitialState();
@@ -155,9 +162,11 @@ module.exports = class PageFilter {
     }
 
     clearFilters() {
-        const allInputs = utils.getAll(`[${this.filterInputAttr}]`).forEach((el) => {
-            el.checked = false;
+        this.clearing = true;
+        utils.getAll(`[${this.filterInputAttr}]:checked`).forEach((el) => {
+            el.click();
         });
+        this.clearing = false;
         this.filter();
     }
 
@@ -295,6 +304,17 @@ module.exports = class PageFilter {
     getInitialStates() {
         [...document.querySelectorAll(`[${this.filterListAttr}]`)].forEach((listEl) => {
             this.initialStates.push([...listEl.children]);
+        });
+    }
+
+    setFilterTrackerClasses(state) {
+        const isFilterSet = Object.entries(state).length;
+        [...document.querySelectorAll(this.filterActiveTrackerSelector)].forEach((el) => {
+            if (isFilterSet) {
+                el.classList.add('is-filter-active');
+            } else {
+                el.classList.remove('is-filter-active');
+            }
         });
     }
 
