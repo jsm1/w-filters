@@ -17,7 +17,8 @@ module.exports = class PageFilter {
         clearFilterSelector = '[data-clear-filters]',
         nextPageSelector = '.w-pagination-next',
         previousPageSelector = '.w-pagination-previous',
-        filterActiveTrackerSelector = '[data-filter-state]'
+        filterActiveTrackerSelector = '[data-filter-state]',
+        andFilterAttribute = 'data-and-filter',
     }) {
         this.filterListAttr = filterListAttr;
         this.filterListCollectionAttr = filterListCollectionAttr;
@@ -32,6 +33,7 @@ module.exports = class PageFilter {
         this.nextPageSelector = nextPageSelector;
         this.previousPageSelector = previousPageSelector;
         this.filterActiveTrackerSelector = filterActiveTrackerSelector;
+        this.andFilterAttribute = andFilterAttribute;
         this.clearing = false;
     }
 
@@ -81,8 +83,10 @@ module.exports = class PageFilter {
                 console.log('Filter name value missing for element', el);
                 return;
             }
-            const filterName = filterNameEl.getAttribute(this.filterNameAttr);
+            const attributeFilterName = filterNameEl.getAttribute(this.filterNameAttr);
             const filterValue = filterNameEl.getAttribute(this.filterValueAttr);
+            const isAndFilter = !!el.getAttribute(this.andFilterAttribute);
+            const filterName = isAndFilter ? (attributeFilterName + '*AND') : attributeFilterName;
             if (!values[filterName]) {
                 values[filterName] = [];
             }
