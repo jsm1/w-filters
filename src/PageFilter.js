@@ -19,6 +19,7 @@ module.exports = class PageFilter {
         previousPageSelector = '.w-pagination-previous',
         filterActiveTrackerSelector = '[data-filter-state]',
         andFilterAttribute = 'data-and-filter',
+        filterAlwaysActiveAttr = 'data-filter-always',
     }) {
         this.filterListAttr = filterListAttr;
         this.filterListCollectionAttr = filterListCollectionAttr;
@@ -34,6 +35,7 @@ module.exports = class PageFilter {
         this.previousPageSelector = previousPageSelector;
         this.filterActiveTrackerSelector = filterActiveTrackerSelector;
         this.andFilterAttribute = andFilterAttribute;
+        this.filterAlwaysActiveAttr = filterAlwaysActiveAttr;
         this.clearing = false;
     }
 
@@ -69,7 +71,7 @@ module.exports = class PageFilter {
     }
 
     getState() {
-        const checkedFilterElements = utils.getAll(`[${this.filterInputAttr}]:checked`);
+        const checkedFilterElements = utils.getAll(`[${this.filterInputAttr}]:checked, [${this.filterAlwaysActiveAttr}]`);
         const filterValuesFromElements = this.getFilterValuesFromInputs(checkedFilterElements);
         return filterValuesFromElements;
     }
@@ -167,7 +169,7 @@ module.exports = class PageFilter {
 
     clearFilters() {
         this.clearing = true;
-        utils.getAll(`[${this.filterInputAttr}]:checked`).forEach((el) => {
+        utils.getAll(`[${this.filterInputAttr}]:checked:not(${this.filterAlwaysActiveAttr})`).forEach((el) => {
             el.click();
         });
         this.clearing = false;
